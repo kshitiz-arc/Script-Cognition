@@ -69,7 +69,7 @@ It uses the [**EMOTHAW**](https://archive.ics.uci.edu/dataset/520/emothaw) datas
   ║  HW Features ████████████████████████████   29+      ║
   ║  Emotions    ██████████████                 3        ║
   ║                                                      ║
-  ║  Format: .svc  →  X, Y, timestamp, pressure,        ║
+  ║  Format: .svc  →  X, Y, timestamp, pressure,         ║
   ║                    pen status, azimuth, altitude     ║
   ╚══════════════════════════════════════════════════════╝
 ```
