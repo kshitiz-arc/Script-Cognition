@@ -40,7 +40,18 @@ It uses the [**EMOTHAW**](https://archive.ics.uci.edu/dataset/520/emothaw) datas
 ```
   .svc file  ──▶  parse pen data  ──▶  render trajectory  ──▶  CNN  ──▶  emotion
 ```
+## 🌐 Live Demo
 
+👉 **Web Application:**  
+https://script-cognition.streamlit.app/
+
+> ⚠️ **Deployment Notice**  
+> This Streamlit demo is intended for interface visualization and workflow demonstration only.  
+> Due to deployment constraints (model size and training requirements), the hosted version does not include fully trained models.  
+> 
+> For accurate predictions and complete functionality, please run the application locally after training the models as described below.
+
+---
 ---
 
 ## ✦ Features at a Glance
