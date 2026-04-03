@@ -348,7 +348,7 @@ Please follow PEP 8 and add docstrings to any new functions.
 
 ## 📄 License
 
-MIT — see [LICENSE](LICENSE) for details.
+APACHE 2.0 — see [LICENSE](LICENSE) for details.
 
 ---
 
