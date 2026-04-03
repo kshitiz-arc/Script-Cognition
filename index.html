@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Emotion Detection — EMOTHAW</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#030712;color:#e2e8f0;font-family:'Share Tech Mono',monospace;overflow-x:hidden;}
+  canvas#bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+  .wrapper{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:2rem 1.5rem 3rem;}
+  .hero{text-align:center;padding:3rem 1rem 2rem;position:relative;}
+  .hero-eye{width:90px;height:90px;margin:0 auto 1.5rem;position:relative;}
+  .hero-eye svg{width:100%;height:100%;}
+  .eye-pulse{animation:eyePulse 2.4s ease-in-out infinite;}
+  @keyframes eyePulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.6;transform:scale(.94);}}
+  .scanline{animation:scan 2s linear infinite;}
+  @keyframes scan{0%{transform:translateY(-36px);opacity:0;}20%{opacity:1;}80%{opacity:1;}100%{transform:translateY(36px);opacity:0;}}
+  .hero-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.6rem,5vw,2.8rem);font-weight:900;letter-spacing:.04em;line-height:1.1;background:linear-gradient(135deg,#a78bfa 0%,#38bdf8 50%,#34d399 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.5rem;}
+  .hero-sub{font-size:.78rem;letter-spacing:.25em;color:#6b7280;text-transform:uppercase;margin-bottom:1.5rem;}
+  .hero-tagline{font-size:1rem;color:#94a3b8;max-width:520px;margin:0 auto 2rem;line-height:1.7;}
+  .hero-tagline span{color:#a78bfa;font-weight:700;}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:2rem;}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:999px;font-size:.72rem;font-family:'Share Tech Mono',monospace;letter-spacing:.08em;border:1px solid;font-weight:700;}
+  .badge-purple{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.4);color:#c4b5fd;}
+  .badge-cyan{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.4);color:#7dd3fc;}
+  .badge-green{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.4);color:#6ee7b7;}
+  .badge-pink{background:rgba(244,114,182,.1);border-color:rgba(244,114,182,.4);color:#f9a8d4;}
+  .badge-amber{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.4);color:#fde68a;}
+  .badge-dot{width:6px;height:6px;border-radius:50%;display:inline-block;animation:blinkDot 1.4s ease-in-out infinite;}
+  @keyframes blinkDot{0%,100%{opacity:1;}50%{opacity:.2;}}
+  .badge-purple .badge-dot{background:#a78bfa;}
+  .badge-cyan .badge-dot{background:#38bdf8;}
+  .badge-green .badge-dot{background:#34d399;}
+  .badge-pink .badge-dot{background:#f472b6;}
+  .badge-amber .badge-dot{background:#fbbf24;}
+  .pipeline{background:rgba(255,255,255,.02);border:1px solid rgba(167,139,250,.2);border-radius:12px;padding:1.4rem 1.5rem;margin-bottom:2.5rem;position:relative;overflow:hidden;}
+  .pipeline::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#a78bfa,#38bdf8,#34d399,transparent);}
+  .pipeline-label{font-size:.65rem;letter-spacing:.2em;color:#4b5563;text-transform:uppercase;margin-bottom:1rem;}
+  .pipeline-flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;justify-content:center;}
+  .pipe-step{padding:6px 14px;border-radius:6px;font-size:.75rem;font-family:'Share Tech Mono',monospace;border:1px solid;white-space:nowrap;}
+  .pipe-step.s1{background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.35);color:#c4b5fd;}
+  .pipe-step.s2{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.35);color:#7dd3fc;}
+  .pipe-step.s3{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.35);color:#6ee7b7;}
+  .pipe-step.s4{background:rgba(244,114,182,.12);border-color:rgba(244,114,182,.35);color:#f9a8d4;}
+  .pipe-step.s5{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.35);color:#fde68a;}
+  .pipe-arrow{color:#374151;font-size:1rem;}
+  .section-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:2.5rem;}
+  .card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.25rem;position:relative;overflow:hidden;transition:border-color .3s,background .3s;cursor:default;}
+  .card:hover{background:rgba(255,255,255,.04);}
+  .card-accent{position:absolute;top:0;left:0;right:0;height:2px;border-radius:12px 12px 0 0;}
+  .acc-purple{background:linear-gradient(90deg,#7c3aed,#a78bfa);}
+  .acc-cyan{background:linear-gradient(90deg,#0ea5e9,#38bdf8);}
+  .acc-green{background:linear-gradient(90deg,#059669,#34d399);}
+  .acc-pink{background:linear-gradient(90deg,#db2777,#f472b6);}
+  .card:hover .acc-purple{background:linear-gradient(90deg,#a78bfa,#c4b5fd);}
+  .card:hover .acc-cyan{background:linear-gradient(90deg,#38bdf8,#7dd3fc);}
+  .card:hover .acc-green{background:linear-gradient(90deg,#34d399,#6ee7b7);}
+  .card:hover .acc-pink{background:linear-gradient(90deg,#f472b6,#f9a8d4);}
+  .card-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;font-size:18px;}
+  .icon-purple{background:rgba(167,139,250,.15);}
+  .icon-cyan{background:rgba(56,189,248,.15);}
+  .icon-green{background:rgba(52,211,153,.15);}
+  .icon-pink{background:rgba(244,114,182,.15);}
+  .card-title{font-family:'Orbitron',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.08em;margin-bottom:.5rem;}
+  .ct-purple{color:#c4b5fd;}.ct-cyan{color:#7dd3fc;}.ct-green{color:#6ee7b7;}.ct-pink{color:#f9a8d4;}
+  .card-body{font-size:.78rem;color:#6b7280;line-height:1.6;}
+  .card-body strong{color:#9ca3af;font-weight:400;}
+  .meters{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.4rem 1.5rem;margin-bottom:2.5rem;position:relative;overflow:hidden;}
+  .meters::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#34d399,#38bdf8,transparent);}
+  .meters-title{font-family:'Orbitron',sans-serif;font-size:.7rem;letter-spacing:.15em;color:#4b5563;text-transform:uppercase;margin-bottom:1.2rem;}
+  .meter-row{display:flex;align-items:center;gap:12px;margin-bottom:.85rem;}
+  .meter-label{width:90px;font-size:.72rem;letter-spacing:.05em;flex-shrink:0;}
+  .meter-track{flex:1;height:6px;background:rgba(255,255,255,.05);border-radius:999px;overflow:hidden;}
+  .meter-fill{height:100%;border-radius:999px;animation:fillIn 1.2s cubic-bezier(.22,1,.36,1) both;}
+  @keyframes fillIn{from{width:0!important;}}
+  .mf-purple{background:linear-gradient(90deg,#7c3aed,#a78bfa);}
+  .mf-cyan{background:linear-gradient(90deg,#0ea5e9,#38bdf8);}
+  .mf-pink{background:linear-gradient(90deg,#db2777,#f472b6);}
+  .meter-val{width:42px;text-align:right;font-size:.72rem;font-family:'Share Tech Mono',monospace;flex-shrink:0;}
+  .terminal{background:#0a0f1e;border:1px solid rgba(56,189,248,.2);border-radius:10px;padding:1.2rem 1.4rem;margin-bottom:2.5rem;font-family:'Share Tech Mono',monospace;font-size:.75rem;position:relative;overflow:hidden;}
+  .terminal::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#38bdf8,transparent);}
+  .term-bar{display:flex;align-items:center;gap:6px;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid rgba(255,255,255,.05);}
+  .term-dot{width:10px;height:10px;border-radius:50%;}
+  .td-r{background:#ef4444;}.td-y{background:#eab308;}.td-g{background:#22c55e;}
+  .term-title{margin-left:auto;font-size:.65rem;color:#374151;letter-spacing:.1em;}
+  .term-line{line-height:1.9;}
+  .tc-prompt{color:#38bdf8;}.tc-cmd{color:#e2e8f0;}.tc-dim{color:#374151;}.tc-out{color:#6b7280;}
+  .tc-green{color:#34d399;}.tc-purple{color:#a78bfa;}.tc-pink{color:#f472b6;}.tc-amber{color:#fbbf24;}.tc-cyan{color:#7dd3fc;}
+  .cursor{display:inline-block;width:7px;height:13px;background:#38bdf8;vertical-align:middle;animation:blink 1s step-end infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:2.5rem;}
+  .stat-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1rem;text-align:center;}
+  .stat-num{font-family:'Orbitron',sans-serif;font-size:1.5rem;font-weight:700;line-height:1.1;margin-bottom:.3rem;}
+  .sn-purple{color:#a78bfa;}.sn-cyan{color:#38bdf8;}.sn-green{color:#34d399;}.sn-pink{color:#f472b6;}.sn-amber{color:#fbbf24;}
+  .stat-label{font-size:.65rem;color:#4b5563;letter-spacing:.12em;text-transform:uppercase;}
+  .arch{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.4rem 1.5rem;margin-bottom:2.5rem;position:relative;overflow:hidden;}
+  .arch::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#f472b6,#a78bfa,transparent);}
+  .arch-title{font-family:'Orbitron',sans-serif;font-size:.7rem;letter-spacing:.15em;color:#4b5563;text-transform:uppercase;margin-bottom:1.2rem;}
+  .arch-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .arch-box{border-radius:8px;padding:1rem;border:1px solid;}
+  .ab-purple{background:rgba(167,139,250,.07);border-color:rgba(167,139,250,.25);}
+  .ab-cyan{background:rgba(56,189,248,.07);border-color:rgba(56,189,248,.25);}
+  .arch-box-title{font-family:'Orbitron',sans-serif;font-size:.72rem;font-weight:700;margin-bottom:.6rem;}
+  .abt-purple{color:#c4b5fd;}.abt-cyan{color:#7dd3fc;}
+  .arch-spec{font-size:.7rem;color:#6b7280;line-height:1.8;}
+  .arch-spec span{color:#9ca3af;}
+  .footer{text-align:center;padding:2rem 0 1rem;border-top:1px solid rgba(255,255,255,.05);}
+  .footer-quote{font-size:.85rem;color:#4b5563;font-style:italic;margin-bottom:.75rem;}
+  .footer-quote em{color:#7c3aed;font-style:normal;}
+  .footer-copy{font-size:.65rem;letter-spacing:.15em;color:#374151;text-transform:uppercase;}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);margin:2rem 0;}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="wrapper">
+  <div class="hero">
+    <div class="hero-eye">
+      <svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#030712" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="45" cy="45" r="44" fill="url(#eyeGlow)" class="eye-pulse"/>
+        <circle cx="45" cy="45" r="40" fill="none" stroke="#a78bfa" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.4"/>
+        <ellipse cx="45" cy="45" rx="32" ry="18" fill="#0f0a1e" stroke="#7c3aed" stroke-width="0.8"/>
+        <circle cx="45" cy="45" r="13" fill="#1a0e3a" stroke="#a78bfa" stroke-width="1"/>
+        <circle cx="45" cy="45" r="9" fill="#2d1b69" stroke="#c4b5fd" stroke-width="0.5"/>
+        <circle cx="45" cy="45" r="5" fill="#030712"/>
+        <line x1="13" y1="45" x2="77" y2="45" stroke="#38bdf8" stroke-width="0.5" opacity="0.6" class="scanline"/>
+        <circle cx="49" cy="41" r="2.5" fill="#c4b5fd" opacity="0.7"/>
+        <path d="M38 60 L45 74 L52 60" fill="none" stroke="#a78bfa" stroke-width="0.8" stroke-linejoin="round"/>
+        <line x1="45" y1="62" x2="45" y2="73" stroke="#38bdf8" stroke-width="0.5"/>
+        <path d="M5 15 L5 5 L15 5" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.5"/>
+        <path d="M85 15 L85 5 L75 5" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.5"/>
+        <path d="M5 75 L5 85 L15 85" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.5"/>
+        <path d="M85 75 L85 85 L75 85" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.5"/>
+      </svg>
+    </div>
+    <div class="hero-title">Emotion Detection<br/>Using Handwriting</div>
+    <div class="hero-sub">// EMOTHAW Neural Intelligence System v1.0</div>
+    <div class="hero-tagline">Your pen leaves more than ink — it leaves <span>emotion</span>.<br/>A CNN pipeline that reads Depression, Anxiety &amp; Stress from raw handwriting signals.</div>
+    <div class="badges">
+      <span class="badge badge-purple"><span class="badge-dot"></span>Python 3.10+</span>
+      <span class="badge badge-cyan"><span class="badge-dot"></span>PyTorch 2.0+</span>
+      <span class="badge badge-green"><span class="badge-dot"></span>Streamlit</span>
+      <span class="badge badge-pink"><span class="badge-dot"></span>MIT License</span>
+      <span class="badge badge-amber"><span class="badge-dot"></span>EMOTHAW Dataset</span>
+    </div>
+  </div>
+  <div class="pipeline">
+    <div class="pipeline-label">// signal processing pipeline</div>
+    <div class="pipeline-flow">
+      <span class="pipe-step s1">.svc file</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step s2">Parse pen data</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step s3">Render trajectory</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step s4">CNN forward pass</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step s5">Emotion output</span>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num sn-purple">129</div><div class="stat-label">Subjects</div></div>
+    <div class="stat-card"><div class="stat-num sn-cyan">7</div><div class="stat-label">HW Tasks Each</div></div>
+    <div class="stat-card"><div class="stat-num sn-green">900+</div><div class="stat-label">Samples</div></div>
+    <div class="stat-card"><div class="stat-num sn-pink">29+</div><div class="stat-label">HW Features</div></div>
+    <div class="stat-card"><div class="stat-num sn-amber">3</div><div class="stat-label">Emotions</div></div>
+  </div>
+  <div class="section-grid">
+    <div class="card"><div class="card-accent acc-purple"></div><div class="card-icon icon-purple">🧠</div><div class="card-title ct-purple">Dual CNN Arch</div><div class="card-body">Lightweight <strong>EmotionCNN</strong> (2.7M params) or <strong>ResNet18</strong> transfer learning (11.2M params).</div></div>
+    <div class="card"><div class="card-accent acc-cyan"></div><div class="card-icon icon-cyan">🌐</div><div class="card-title ct-cyan">Live Web App</div><div class="card-body">Streamlit interface — upload <strong>.svc files</strong>, switch emotion targets, visualize pen trajectories in real time.</div></div>
+    <div class="card"><div class="card-accent acc-green"></div><div class="card-icon icon-green">🔬</div><div class="card-title ct-green">Signal Features</div><div class="card-body">Velocity, pressure, curvature, stroke count — <strong>29+ features</strong> extracted per sample.</div></div>
+    <div class="card"><div class="card-accent acc-pink"></div><div class="card-icon icon-pink">⚡</div><div class="card-title ct-pink">Full CLI</div><div class="card-body">Train, predict, visualize, extract — all from the <strong>terminal</strong>. CUDA GPU support included.</div></div>
+  </div>
+  <div class="meters">
+    <div class="meters-title">// DASS-21 emotion classification targets</div>
+    <div class="meter-row"><div class="meter-label" style="color:#c4b5fd">DEPRESSION</div><div class="meter-track"><div class="meter-fill mf-purple" style="width:72%;animation-delay:.1s"></div></div><div class="meter-val" style="color:#c4b5fd">72%</div></div>
+    <div class="meter-row"><div class="meter-label" style="color:#7dd3fc">ANXIETY</div><div class="meter-track"><div class="meter-fill mf-cyan" style="width:84%;animation-delay:.25s"></div></div><div class="meter-val" style="color:#7dd3fc">84%</div></div>
+    <div class="meter-row"><div class="meter-label" style="color:#f9a8d4">STRESS</div><div class="meter-track"><div class="meter-fill mf-pink" style="width:68%;animation-delay:.4s"></div></div><div class="meter-val" style="color:#f9a8d4">68%</div></div>
+    <div style="font-size:.65rem;color:#374151;margin-top:.75rem;letter-spacing:.08em;">* sample confidence scores — binary LOW / HIGH per DASS threshold</div>
+  </div>
+  <div class="terminal">
+    <div class="term-bar"><div class="term-dot td-r"></div><div class="term-dot td-y"></div><div class="term-dot td-g"></div><div class="term-title">EMOTION_DETECTION // TERMINAL</div></div>
+    <div class="term-line"><span class="tc-prompt">❯ </span><span class="tc-cmd">pip install -r requirements.txt</span></div>
+    <div class="term-line"><span class="tc-out">Installing PyTorch, OpenCV, Streamlit...</span> <span class="tc-green">✓ done</span></div>
+    <div class="term-line"><span class="tc-dim">─────────────────────────────────────────</span></div>
+    <div class="term-line"><span class="tc-prompt">❯ </span><span class="tc-cmd">python main.py train --model cnn --emotion anxiety</span></div>
+    <div class="term-line"><span class="tc-out">Epoch 12/30 | Loss: 0.342 | Val Acc: </span><span class="tc-purple">81.4%</span></div>
+    <div class="term-line"><span class="tc-green">✓ Saved → outputs/models/best_cnn_anxiety.pth</span></div>
+    <div class="term-line"><span class="tc-dim">─────────────────────────────────────────</span></div>
+    <div class="term-line"><span class="tc-prompt">❯ </span><span class="tc-cmd">python main.py predict --svc_path sample.svc</span></div>
+    <div class="term-line"><span class="tc-pink">PREDICTED: LOW</span> <span class="tc-out">| Confidence:</span> <span class="tc-amber">84.12%</span></div>
+    <div class="term-line"><span class="tc-dim">Low   ████████████████████████  0.84</span></div>
+    <div class="term-line"><span class="tc-dim">High  ████                      0.16</span></div>
+    <div class="term-line"><span class="tc-prompt">❯ </span><span class="cursor"></span></div>
+  </div>
+  <div class="arch">
+    <div class="arch-title">// model architecture comparison</div>
+    <div class="arch-grid">
+      <div class="arch-box ab-purple"><div class="arch-box-title abt-purple">EmotionCNN</div><div class="arch-spec">Params: <span>2.7M</span><br/>Blocks: <span>4 conv + BN</span><br/>Dropout: <span>yes</span><br/>Best for: <span>small datasets</span><br/>Speed: <span>fast ⚡</span></div></div>
+      <div class="arch-box ab-cyan"><div class="arch-box-title abt-cyan">EmotionResNet</div><div class="arch-spec">Params: <span>11.2M</span><br/>Backbone: <span>ResNet18</span><br/>Pretrained: <span>ImageNet</span><br/>Best for: <span>accuracy</span><br/>Transfer: <span>yes 🧠</span></div></div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="footer">
+    <div class="footer-quote">"Your pen already knows how you feel — <em>now the model does too.</em>"</div>
+    <div class="footer-copy">// kshitiz-arc · MIT License · Python 3.10+ · PyTorch 2.0+</div>
+  </div>
+</div>
+<script>
+const canvas=document.getElementById('bg');const ctx=canvas.getContext('2d');
+function resize(){canvas.width=window.innerWidth;canvas.height=document.body.scrollHeight;}
+resize();window.addEventListener('resize',resize);
+const dots=[];for(let i=0;i<60;i++){dots.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.2+.3,vx:(Math.random()-.5)*.15,vy:(Math.random()-.5)*.15,col:['#a78bfa','#38bdf8','#34d399','#f472b6'][Math.floor(Math.random()*4)],a:Math.random()*.4+.1});}
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);dots.forEach(d=>{d.x+=d.vx;d.y+=d.vy;if(d.x<0)d.x=canvas.width;if(d.x>canvas.width)d.x=0;if(d.y<0)d.y=canvas.height;if(d.y>canvas.height)d.y=0;ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fillStyle=d.col;ctx.globalAlpha=d.a;ctx.fill();ctx.globalAlpha=1;});for(let i=0;i<dots.length;i++){for(let j=i+1;j<dots.length;j++){const dx=dots[i].x-dots[j].x,dy=dots[i].y-dots[j].y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<90){ctx.beginPath();ctx.moveTo(dots[i].x,dots[i].y);ctx.lineTo(dots[j].x,dots[j].y);ctx.strokeStyle='#a78bfa';ctx.globalAlpha=(1-dist/90)*.08;ctx.lineWidth=.5;ctx.stroke();ctx.globalAlpha=1;}}}requestAnimationFrame(draw);}
+draw();
+</script>
+</body>
+</html>
